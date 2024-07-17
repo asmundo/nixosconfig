@@ -17,7 +17,6 @@ in
       ./services.nix
       ./desktop.nix
       ./users.nix
-      # "${sources.home-manager}/nixos"
     ];
 
     # Configure the Nix package manager
@@ -100,28 +99,12 @@ in
   # Enable CUPS to print documents.
   services.printing.enable = true;
 
-  # Enable sound with pipewire.
-  #sound.enable = true;
-  #hardware.pulseaudio.enable = false;
-
   # security.pam.services.gdm.enableGnomeKeyring = true;
   security = {
     sudo.extraConfig = ''
       Defaults        timestamp_timeout=30
     '';
   };
-  # services.pipewire = {
-  #   enable = true;
-  #   alsa.enable = true;
-  #   alsa.support32Bit = true;
-  #   pulse.enable = true;
-  #   # If you want to use JACK applications, uncomment this
-  #   #jack.enable = true;
-
-  #   # use the example session manager (no others are packaged yet so this is enabled by default,
-  #   # no need to redefine it in your config for now)
-  #   #media-session.enable = true;
-  # };
 
   virtualisation.docker.enable = true;
 
@@ -136,7 +119,6 @@ in
                   ];
     packages = with pkgs; [
       firefox
-#      emacs
       nixos-option
       gitFull
       pass
@@ -146,11 +128,7 @@ in
       niv
     ];
   };
-  # # home-manager.useGlobalPkgs = true;
-  # # home-manager.users.aos = {
-  # #   home.stateVersion = config.system.stateVersion;
-  # #   home.packages = [ ];
-  # #   #
+
   programs = {
     bash = {
       blesh.enable = true;
