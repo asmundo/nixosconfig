@@ -39,6 +39,7 @@ in {
     file
     gcc
     gimp
+    flameshot
     gitFull
     gnome.nautilus
     gnumake
@@ -64,7 +65,6 @@ in {
     lnav
     man-pages
     nginx
-    nheko
     nheko
     nix-diff
     nix-index
@@ -103,6 +103,8 @@ in {
     zstd
     jfrog-cli
     gdb
+    trivy
+    semgrep
 
     libreoffice
     aspell
@@ -115,6 +117,7 @@ in {
     cargo
     rustup
     rust-analyzer
+    cargo-license
 
     # Python packages
     python3

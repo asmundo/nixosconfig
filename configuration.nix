@@ -29,9 +29,6 @@ in
           "openssl-1.1.1w"
           "openssl-1.1.1m"
         ];
-        # allowUnfreePredicate = pkg: builtins.elem (lib.getName pkg) [
-        #   "aws-workspaces"
-        # ];
       };
     };
   };
@@ -39,14 +36,14 @@ in
   documentation.enable = false;
   nix = {
     # tools to non default version
-    package = pkgs.nix_2_3;
-    settings = {
-      trusted-users = [ "aos" ];
-    };
+    #package = pkgs.nix_2_3;
     extraOptions = ''
       netrc-file = /etc/nix/netrc
+      experimental-features = nix-command
+      log-quiet = true
     '';
     settings = {
+      trusted-users = [ "aos" ];
       max-jobs = "auto";
     };
   };
@@ -155,22 +152,36 @@ in
           }
           tplan ()
           {
-              PLAN=/tmp/tplan$$.log
-              (terraform plan --out $PLAN | \
-                     tee /tmp/asdffsds \
-                && nix-diff --character-oriented --color always $(awk -F\" '/nixos_drv/ {print $4, $6}' /tmp/asdffsds )) | less -S
+              (
+                  set -e
+                  set -o pipefail
+                  local failed=0
+                  PLAN=/tmp/tplan$$.log
+                  OUTPUT=/tmp/tplan_$$.output.txt
+                  terraform plan --out $PLAN | tee $OUTPUT
+                  if ! grep -q "No changes" /tmp/; then
+                     local drvs=$(awk -F\" '/nixos_drv/ {print $4, $6}' $OUTPUT)
+                     echo $drvs
+                     if (($(echo $drvs | wc -w) == 2)); then
+                        (cat $OUTPUT; nix-diff --character-oriented --color always $drvs ) | less --quit-if-one-screen
+                     fi
 
-          read -p "Do you want to execute the TERRAFORM APPLY? (y/n) " answer
+                     read -p "Do you want to execute the TERRAFORM APPLY? (y/n) " answer
 
-          # Check the answer
-          if [ "$answer" = "y" ]; then
-              # Execute the HAPPY command
-              echo "Executing terraform plan command..."
-              terraform apply $PLAN
-          fi
-
+                     # Check the answer
+                     if [ "$answer" = "y" ]; then
+                         # Execute the HAPPY command
+                         echo "Executing terraform plan command..."
+                         terraform apply $PLAN
+                     fi
+                  fi
+              )
           }
+        source $(${pkgs.findutils}/bin/find '${pkgs.emacsPackages.vterm}' -name 'emacs-vterm-bash.sh')
        '';
+       shellInit = ''
+        source $(${pkgs.findutils}/bin/find '${pkgs.emacsPackages.vterm}' -name 'emacs-vterm-bash.sh')
+      '';
     };
     git = {
       enable = true;
@@ -229,7 +240,12 @@ in
   # List services that you want to enable:
 
   # Enable the OpenSSH daemon.
-  services.openssh.enable = true;
+  services.openssh = {
+    enable = true;
+    settings = {
+      X11Forwarding = true;
+    };
+  };
 
   # Open ports in the firewall.
   # networking.firewall.allowedTCPPorts = [ ... ];
